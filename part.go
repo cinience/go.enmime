@@ -28,7 +28,7 @@ type MIMEPart interface {
 	ContentType() string          // Content-Type header without parameters
 	Disposition() string          // Content-Disposition header without parameters
 	FileName() string             // File Name from disposition or type header
-	Charset() string              // Content Charset
+	Charset() string              // Charset
 	Content() []byte              // Decoded content of this part (can be empty)
 }
 
@@ -87,7 +87,7 @@ func (p *memMIMEPart) FileName() string {
 	return p.fileName
 }
 
-// Content charset
+// Charset
 func (p *memMIMEPart) Charset() string {
 	return p.charset
 }
@@ -164,6 +164,7 @@ func parseParts(parent *memMIMEPart, reader io.Reader, boundary string) error {
 		if ctype == "" {
 			return fmt.Errorf("Missing Content-Type at boundary %v", boundary)
 		}
+
 		mediatype, mparams, err := mime.ParseMediaType(ctype)
 		if err != nil {
 			return err
@@ -192,10 +193,9 @@ func parseParts(parent *memMIMEPart, reader io.Reader, boundary string) error {
 		if p.fileName == "" && mparams["file"] != "" {
 			p.fileName = mparams["file"]
 		}
-		if p.charset == "" {
+		if p.charset == "" && mparams["charset"] != "" {
 			p.charset = mparams["charset"]
 		}
-
 		boundary := mparams["boundary"]
 		if boundary != "" {
 			// Content is another multipart
